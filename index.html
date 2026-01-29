@@ -1,30 +1,46 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Jump & Win Game</title>
+  <title>Flappy Win</title>
   <style>
     body {
       margin: 0;
+      background: #70c5ce;
       font-family: Arial, sans-serif;
-      background: #87ceeb;
       overflow: hidden;
       text-align: center;
     }
 
     #game {
       height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
+      position: relative;
     }
 
-    #player {
+    #bird {
       width: 40px;
-      height: 40px;
-      background: #ff5733;
-      border-radius: 5px;
-      margin-bottom: 20px;
+      height: 30px;
+      background: yellow;
+      border-radius: 50%;
+      position: absolute;
+      top: 200px;
+      left: 100px;
+    }
+
+    #score {
+      position: absolute;
+      top: 20px;
+      width: 100%;
+      font-size: 32px;
+      color: white;
+      font-weight: bold;
+    }
+
+    #ready {
+      position: absolute;
+      top: 40%;
+      width: 100%;
+      font-size: 28px;
+      color: white;
     }
 
     #scam {
@@ -32,11 +48,7 @@
       height: 100vh;
       background: #111;
       color: red;
-      padding-top: 100px;
-    }
-
-    h1 {
-      font-size: 32px;
+      padding-top: 120px;
     }
   </style>
 </head>
@@ -44,21 +56,48 @@
 <body>
 
 <div id="game">
-  <h1>🏃 Jump & Win</h1>
-  <p>Press <b>SPACE</b> to jump and avoid traps!</p>
-  <div id="player"></div>
+  <div id="score">0</div>
+  <div id="ready">Get Ready...</div>
+  <div id="bird"></div>
 </div>
 
 <div id="scam">
   <h1>⚠️ YOU GOT SCAMMED!</h1>
-  <p>Scams look exciting at first.</p>
-  <p>Never trust unknown links, games, rewards or calls.</p>
-  <p><b>Think. Verify. Stay Safe.</b></p>
+  <p>This game looked real, didn’t it?</p>
+  <p>Scams also look real.</p>
+  <p>Never trust unknown games, links, rewards or calls.</p>
+  <p><b>Stop. Think. Verify.</b></p>
 </div>
 
 <script>
-  document.addEventListener("keydown", function (e) {
-    if (e.code === "Space") {
+  let score = 0;
+  let gameRunning = false;
+  let frozen = false;
+  let scoreInterval;
+
+  // Start game after 3 seconds
+  setTimeout(() => {
+    document.getElementById("ready").style.display = "none";
+    gameRunning = true;
+
+    scoreInterval = setInterval(() => {
+      if (!frozen) {
+        score++;
+        document.getElementById("score").innerText = score;
+      }
+    }, 1000);
+
+    // Freeze game after some time
+    setTimeout(() => {
+      frozen = true;
+    }, 7000);
+
+  }, 3000);
+
+  // Detect clicks after freeze
+  document.addEventListener("click", () => {
+    if (frozen) {
+      clearInterval(scoreInterval);
       document.getElementById("game").style.display = "none";
       document.getElementById("scam").style.display = "block";
     }
@@ -67,4 +106,5 @@
 
 </body>
 </html>
+
 
