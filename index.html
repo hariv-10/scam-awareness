@@ -9,27 +9,25 @@
       font-family: Arial, sans-serif;
     }
 
-    /* Animated sky background */
     #game {
       width: 100vw;
       height: 100vh;
-      background: linear-gradient(#70c5ce, #ffffff);
+      background: linear-gradient(#70c5ce, #cceeff);
       position: relative;
     }
 
-    /* Moving clouds */
+    /* Clouds */
     .cloud {
       position: absolute;
-      top: 50px;
-      width: 120px;
+      width: 140px;
       height: 50px;
       background: white;
       border-radius: 50px;
       opacity: 0.8;
-      animation: moveCloud 20s linear infinite;
+      animation: cloudMove 30s linear infinite;
     }
 
-    @keyframes moveCloud {
+    @keyframes cloudMove {
       from { left: -150px; }
       to { left: 110vw; }
     }
@@ -37,22 +35,19 @@
     /* Bird */
     #bird {
       position: absolute;
-      left: 100px;
-      top: 200px;
-      width: 40px;
-      height: 30px;
+      left: 120px;
+      top: 250px;
+      width: 42px;
+      height: 32px;
       background: gold;
-      border-radius: 50% 50% 40% 40%;
+      border-radius: 50%;
     }
 
-    /* Beak */
     #bird::after {
       content: "";
       position: absolute;
       right: -10px;
-      top: 10px;
-      width: 0;
-      height: 0;
+      top: 12px;
       border-top: 5px solid transparent;
       border-bottom: 5px solid transparent;
       border-left: 10px solid orange;
@@ -61,17 +56,12 @@
     /* Pipes */
     .pipe {
       position: absolute;
-      width: 60px;
+      width: 70px;
       background: #2ecc71;
     }
 
-    .pipe.top {
-      top: 0;
-    }
-
-    .pipe.bottom {
-      bottom: 0;
-    }
+    .top { top: 0; }
+    .bottom { bottom: 0; }
 
     #score {
       position: absolute;
@@ -80,7 +70,6 @@
       text-align: center;
       font-size: 32px;
       color: white;
-      font-weight: bold;
       text-shadow: 2px 2px 4px #000;
     }
 
@@ -109,88 +98,89 @@
 <body>
 
 <div id="game">
-  <div class="cloud" style="top:60px; animation-duration:25s;"></div>
-  <div class="cloud" style="top:140px; animation-duration:30s;"></div>
+  <div class="cloud" style="top:80px;"></div>
+  <div class="cloud" style="top:160px; animation-duration:40s;"></div>
 
   <div id="score">0</div>
-  <div id="ready">Get Ready...</div>
+  <div id="ready">Press SPACE to fly</div>
   <div id="bird"></div>
 </div>
 
 <div id="scam">
   <h1>⚠️ YOU GOT SCAMMED!</h1>
-  <p>The game felt real.</p>
-  <p>Scams feel real too.</p>
-  <p><b>Never trust unknown games, links or rewards.</b></p>
+  <p>You trusted the game.</p>
+  <p>Scams work the same way.</p>
+  <p><b>Verify before you trust.</b></p>
 </div>
 
 <script>
   const bird = document.getElementById("bird");
   const game = document.getElementById("game");
-  let birdY = 200;
-  let gravity = 2;
+
+  let birdY = 250;
   let velocity = 0;
+  let gravity = 0.6;
   let score = 0;
-  let pipesPassed = 0;
-  let gameRunning = false;
+  let pipesCleared = 0;
+  let running = false;
   let crashed = false;
 
-  // Start game
-  setTimeout(() => {
-    document.getElementById("ready").style.display = "none";
-    gameRunning = true;
-    createPipe();
-    setInterval(gameLoop, 20);
-  }, 3000);
+  // Start game on first key press
+  document.addEventListener("keydown", () => {
+    if (!running) {
+      document.getElementById("ready").style.display = "none";
+      running = true;
+      createPipe();
+      setInterval(gameLoop, 20);
+    }
+  });
 
-  // Controls
+  // Flap
   document.addEventListener("keydown", (e) => {
-    if (!gameRunning) return;
+    if (e.code === "Space" || e.code === "ArrowUp") {
+      velocity = -7;
+    }
 
+    // After fake crash → reveal scam
     if (crashed) {
       game.style.display = "none";
       document.getElementById("scam").style.display = "block";
-      return;
-    }
-
-    if (e.code === "Space" || e.code === "ArrowUp") {
-      velocity = -8;
     }
   });
 
   function gameLoop() {
-    if (crashed) return;
+    if (!running || crashed) return;
 
     velocity += gravity;
     birdY += velocity;
     bird.style.top = birdY + "px";
 
-    if (birdY < 0 || birdY > window.innerHeight - 30) {
-      crashGame();
-    }
+    if (birdY < 0) birdY = 0;
+    if (birdY > window.innerHeight - 40) birdY = window.innerHeight - 40;
   }
 
   function createPipe() {
     if (crashed) return;
 
-    const gap = 160;
-    const pipeTopHeight = Math.random() * 200 + 50;
-    const pipeBottomHeight = window.innerHeight - pipeTopHeight - gap;
+    const gap = 180;
+    const topHeight = Math.random() * 200 + 60;
+    const bottomHeight = window.innerHeight - topHeight - gap;
 
     const pipeTop = document.createElement("div");
     pipeTop.className = "pipe top";
-    pipeTop.style.height = pipeTopHeight + "px";
+    pipeTop.style.height = topHeight + "px";
     pipeTop.style.left = "100vw";
 
     const pipeBottom = document.createElement("div");
     pipeBottom.className = "pipe bottom";
-    pipeBottom.style.height = pipeBottomHeight + "px";
+    pipeBottom.style.height = bottomHeight + "px";
     pipeBottom.style.left = "100vw";
 
     game.appendChild(pipeTop);
     game.appendChild(pipeBottom);
 
     let pipeX = window.innerWidth;
+    let passed = false;
 
     const movePipe = setInterval(() => {
       if (crashed) {
@@ -202,30 +192,27 @@
       pipeTop.style.left = pipeX + "px";
       pipeBottom.style.left = pipeX + "px";
 
-      // Passed pipe
-      if (pipeX === 100) {
+      // Score when passed
+      if (!passed && pipeX < 120) {
+        passed = true;
         score++;
-        pipesPassed++;
+        pipesCleared++;
         document.getElementById("score").innerText = score;
 
-        if (pipesPassed >= 2) {
-          crashGame();
+        // AFTER FIRST SUCCESS → fake crash
+        if (pipesCleared >= 1) {
+          crashed = true;
         }
       }
 
-      // Remove pipe
-      if (pipeX < -60) {
+      if (pipeX < -80) {
         pipeTop.remove();
         pipeBottom.remove();
         clearInterval(movePipe);
       }
     }, 20);
 
-    setTimeout(createPipe, 2500);
-  }
-
-  function crashGame() {
-    crashed = true;
+    setTimeout(createPipe, 2600);
   }
 </script>
 
