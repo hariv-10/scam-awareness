@@ -148,6 +148,27 @@
     }
   });
 
+  // Mobile tap support
+document.addEventListener("touchstart", () => {
+  if (!running) {
+    document.getElementById("ready").style.display = "none";
+    running = true;
+    createPipe();
+    setInterval(gameLoop, 20);
+    return;
+  }
+
+  if (crashed) {
+    game.style.display = "none";
+    document.getElementById("scam").style.display = "block";
+    return;
+  }
+
+  // Flap on tap
+  velocity = -7;
+});
+
+
   function gameLoop() {
     if (!running || crashed) return;
 
@@ -218,3 +239,4 @@
 
 </body>
 </html>
+
